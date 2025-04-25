@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import { body } from "express-validator"; // it is a middleware
-import { registerUser } from "../controllers/user.controller.js";
+import { loginUser, registerUser } from "../controllers/user.controller.js";
 
 router.post("/register", [
   body("email").isEmail().withMessage("Invalid Email"), //looks inside req.body.email
@@ -9,5 +9,12 @@ router.post("/register", [
   body('password').isLength({min:6}).withMessage('Password must be of 6 characters at least.')
 ],
 registerUser
+);
+
+router.post("/login", [
+  body("email").isEmail().withMessage("Invalid Email"), //looks inside req.body.email
+  body('password').isLength({min:6}).withMessage('Password must be of 6 characters at least.')
+],
+loginUser
 );
 export default router;
