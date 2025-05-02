@@ -398,3 +398,152 @@ The request body should be in JSON format and must include the following fields:
 2. Include all required driver and vehicle information
 3. Handle the response to retrieve the JWT and driver details
 4. Use the JWT for authentication in subsequent requests
+
+## Endpoint: `/drivers/login`
+
+### Description
+This endpoint authenticates a driver by validating their credentials and returns a JWT token upon successful login.
+
+### Method
+`POST`
+
+### Request Body
+```json
+{
+  "email": "driver@example.com",    // Required, must be valid email format
+  "password": "password123"         // Required, minimum 6 characters
+}
+```
+
+### Responses
+
+#### Success Response
+- **Status Code:** `200 OK`
+- **Body:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // JWT token valid for 24 hours
+  "driver": {
+    "_id": "645a1d7b8d2f1d3c4c8b4567",
+    "fullName": {
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "email": "driver@example.com",
+    "vehicle": {
+      "color": "Black",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "Sedan"
+    }
+    // password field is excluded from response
+  }
+}
+```
+
+## Endpoint: `/drivers/profile`
+
+### Description
+Retrieves the profile information of the currently authenticated driver.
+
+### Method
+`GET`
+
+### Authentication
+Requires JWT token in either:
+- Authorization header: `Bearer <token>`
+- Cookie: `token=<token>`
+
+### Example Request
+```http
+GET /drivers/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Response
+- **Status Code:** `200 OK`
+- **Body:**
+```json
+{
+  "driver": {
+    "_id": "645a1d7b8d2f1d3c4c8b4567",
+    "fullName": {
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "email": "driver@example.com",
+    "vehicle": {
+      "color": "Black",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "Sedan"
+    }
+  }
+}
+```
+
+## Endpoint: `/drivers/logout`
+
+### Description
+Logs out the currently authenticated driver by blacklisting their token and clearing cookies.
+
+### Method
+`GET`
+
+### Authentication
+Requires JWT token in either:
+- Authorization header: `Bearer <token>`
+- Cookie: `token=<token>`
+
+### Response
+- **Status Code:** `200 OK`
+- **Body:**
+```json
+{
+  "message": "driver logout successfull"
+}
+```
+
+### Common Error Responses
+
+#### Invalid Credentials (401 Unauthorized)
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+#### Authentication Required (401 Unauthorized)
+```json
+{
+  "message": "Authentication required"
+}
+```
+
+#### Invalid Token (401 Unauthorized)
+```json
+{
+  "message": "Invalid token"
+}
+```
+
+#### Blacklisted Token (401 Unauthorized)
+```json
+{
+  "message": "Token has been invalidated"
+}
+```
+
+#### Driver Not Found (404 Not Found)
+```json
+{
+  "message": "Driver not found"
+}
+```
+
+### Notes
+- JWT token is stored in both response and cookie
+- Token is valid for 24 hours
+- Password field is always excluded from responses
+- Logout adds token to blacklist
+- Use Authorization header or cookie for protected routes

@@ -1,6 +1,7 @@
 import userModel from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import blacklistTokenModel from "../models/blacklistToken.model.js";
+import driverModel from "../models/driver.model.js";
 
 export const authUser = async (req, res, next) => {
     // First, get the token from either cookies or Authorization header
@@ -39,3 +40,26 @@ export const authUser = async (req, res, next) => {
         return res.status(401).json({ message: "Unauthorized: Invalid token" });
     }
 };
+
+export const authDriver = async (req, res, next) => {
+    const token = req.cookies.token || (req.headers.authorization && req.headers.authorization?.split(' ')[1]);
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized: No token provided" });    
+    }
+    const isblacklisted = await blacklistTokenModel.findOne({ token: token });
+    if(isblacklisted){
+        return res.status(401).json({ message: "Unauthorized: Token is blacklisted" });
+    }
+    try{
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const driver = await driverModel.findById(decoded._id).select("-password");
+        if (!driver) {
+            return res.status(404).json({ message: "Driver not found" });
+        }
+        req.driver = driver;
+        return next();
+    }catch (error) {
+        console.error("Token verification error:", error);
+        return res.status(401).json({ message: "Unauthorized: Invalid token" });
+    }
+}

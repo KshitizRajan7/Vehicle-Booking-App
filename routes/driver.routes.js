@@ -1,6 +1,8 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { registerDriver } from '../controllers/driver.controller.js';
+import { getDriverProfile, loginDriver, logoutDriver, registerDriver } from '../controllers/driver.controller.js';
+import { authDriver } from '../middlewares/auth.middleware.js';
+import { get } from 'mongoose';
 
 const router=express.Router();
 
@@ -14,5 +16,14 @@ router.post('/register',[
     body("vehicle.vehicleType").notEmpty().withMessage("Vehicle type is required"),
 ],
     registerDriver);
+
+    router.post('/login',[
+    body("email").notEmpty().withMessage("Email is required").isEmail().withMessage("Email is not valid"),
+    body("password").notEmpty().withMessage("Password is required"),
+],
+    loginDriver);
+
+    router.get('/profile',authDriver,getDriverProfile);
+    router.get('/logout',authDriver,logoutDriver);
 
 export default router;
