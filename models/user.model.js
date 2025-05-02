@@ -31,10 +31,14 @@ const userSchema = new mongoose.Schema({
     }
 })
 
-userSchema.methods.generateAuthToken = function(){
-    const token = jwt.sign({_id: this._id},process.env.JWT_SECRET)
+userSchema.methods.generateAuthToken = function() {
+    const token = jwt.sign(
+        { _id: this._id },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' } // Token will expire in 24 hours
+    );
     return token;
-}
+};
 
 userSchema.methods.comparePassword = async function (password){ // methods are used in the instances. 
     return await bcrypt.compare(password,this.password)

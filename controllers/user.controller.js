@@ -1,6 +1,7 @@
 import userModel from "../models/user.model.js";
 import {createUser}  from "../services/user.service.js";
 import {validationResult} from 'express-validator';
+import blacklistTokenModel from "../models/blacklistToken.model.js";
 
 export const registerUser = async(req,res,next)=>{
  const errors = validationResult(req);
@@ -34,5 +35,25 @@ export const loginUser = async(req,res,next)=>{
       return res.status(401).json({message:'Invalid email or password'});
    }
    const token = user.generateAuthToken();
+   res.cookie('token', token); // Set the cookie with the token
    res.status(200).json({token,user});
+}
+
+export const getUserProfile = async(req,res,next)=>{
+   // const user = await userModel.findById(req.user._id); //this will get the user profile from the database.
+   // if(!user){
+      // return res.status(404).json({message:'User not found'});
+   // }
+   res.status(200).json(req.user);
+}
+
+export const logoutUser = async(req,res,next)=>{
+   const token = req.cookies.token || req.headers.authorization.split(' ')[1]; // Get the token from the cookie
+   await blacklistTokenModel.create({ token }); // Add the token to the blacklist
+   if (!token) {
+       return res.status(401).json({ message: 'No token provided' });
+   }
+   await userModel.findByIdAndUpdate(req.user._id, { socketId: null }); // Clear the socketId in the database
+   res.clearCookie('token'); // Clear the cookie
+   res.status(200).json({ message: 'Logged out successfully' });
 }

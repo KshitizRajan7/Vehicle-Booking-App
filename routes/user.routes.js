@@ -1,7 +1,8 @@
 import express from "express";
 const router = express.Router();
 import { body } from "express-validator"; // it is a middleware
-import { loginUser, registerUser } from "../controllers/user.controller.js";
+import { getUserProfile, loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
+import { authUser } from "../middlewares/auth.middleware.js";
 
 router.post("/register", [
   body("email").isEmail().withMessage("Invalid Email"), //looks inside req.body.email
@@ -17,4 +18,7 @@ router.post("/login", [
 ],
 loginUser
 );
+
+router.get("/profile",authUser, getUserProfile); //this will get the user profile from the database.
+router.get("/logout",authUser, logoutUser); //this will get the user profile from the database.
 export default router;
