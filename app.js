@@ -5,6 +5,7 @@ import cors from 'cors'; //middleware to allow Cross-Origin Resource Sharing
 const app = express();
 import { connectToDb } from './db/db.js';
 import userRoutes from "./routes/user.routes.js"
+import driverRoutes from "./routes/driver.routes.js"; //importing the driver routes
 import cookieParser from 'cookie-parser';
 
 
@@ -20,5 +21,7 @@ app.get('/', async (req, res) => {
   res.send('hello');
 });
  
+app.use('/users', userRoutes); //this will use the user routes for all the requests that start with /users
+app.use('/drivers', driverRoutes); //this will use the driver routes for all the requests that start with /drivers
 
 export default app;
